@@ -1,4 +1,4 @@
-package com.i2n.movieratingservice.models;
+package com.i2n.moviecatalogueservice.models;
 
 public class Ratings {
     private String movieId;

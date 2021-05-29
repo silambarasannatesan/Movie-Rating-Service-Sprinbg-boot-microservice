@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/ratings")
 public class RatingsResource {
 
-    @GetMapping("/{ratingId}")
-    public Ratings getRatings(@PathVariable("ratingId") String ratingId) {
-        return new Ratings("foo", "Good");
+    @GetMapping("/{movieId}")
+    public Ratings getRatings(@PathVariable("movieId") String movieId) {
+        return new Ratings(movieId, 4);
     }
 
 }
