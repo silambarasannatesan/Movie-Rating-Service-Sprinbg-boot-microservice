@@ -4,6 +4,7 @@ import com.i2n.moviecatalogueservice.models.CatalogueItem;
 import com.i2n.moviecatalogueservice.models.Movie;
 import com.i2n.moviecatalogueservice.models.Ratings;
 import com.i2n.movieratingservice.models.UserRating;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,14 +25,19 @@ public class MovieCatalogueResource {
     private RestTemplate restTemplate;
 
     @GetMapping("/{userid}")
-    public List<CatalogueItem> getCatalogueList(@PathVariable("userid") String userId) {
+    @HystrixCommand(fallbackMethod = "getFallbackCatalogue")
+    public List<CatalogueItem> getCatalogue(@PathVariable("userid") String userId) {
 
-        UserRating ratings = restTemplate.getForObject("http://localhost:8083/ratings/users/" + userId, UserRating.class);
+        UserRating ratings = restTemplate.getForObject("http://MOVIE-RATINGS-SERVICE/ratings/users/" + userId, UserRating.class);
 
         return ratings.getUserRating().stream().map(rating -> {
-            Movie movie = restTemplate.getForObject("http://localhost:8082/movies/" + rating.getMovieId(), Movie.class);
+            Movie movie = restTemplate.getForObject("http://MOVIE-INFO-SERVICE/movies/" + rating.getMovieId(), Movie.class);
             return new CatalogueItem(movie.getName(), "Desc", rating.getRating());
         })
                 .collect(Collectors.toList());
+    }
+
+    public List<CatalogueItem> getFallbackCatalogue(@PathVariable("userid") String userId) {
+        return Arrays.asList(new CatalogueItem("No Movie", "", 0));
     }
 }
